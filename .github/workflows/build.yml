@@ -27,7 +27,10 @@ jobs:
     needs: [image]
     container: mpsq/emacs-native-comp-wayland-builder:latest
     steps:
+      - name: Get name
+        run: |
+          echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v2
         with:
-          name: emacs-native-comp-git-enhanced
-          path: /home/pcr/emacs-native-comp-git-enhanced*
+          name: ${{ env.emacs_artifact_name }}
+          path: /home/pcr/${{ env.emacs_artifact_name }}
