@@ -33,4 +33,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: emacs-native-comp-git-enhanced
-          path: /home/runner/work/_temp/_github_home/emacs-native-comp-git-enhanced*
+          path: /home/runner/work/_temp/_github_workflow/emacs-native-comp-git-enhanced*
