@@ -1,5 +1,7 @@
 FROM mpsq/emacs-native-comp-wayland-builder:latest
 
+USER pcr
+
 RUN trizen \
   --quiet \
   --nocolors \
