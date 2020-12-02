@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Get name
         run: |
-          echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
+          sudo echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ env.emacs_artifact_name }}
