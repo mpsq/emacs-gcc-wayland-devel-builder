@@ -27,11 +27,13 @@ jobs:
   artifact:
     runs-on: ubuntu-latest
     needs: [image]
-    container: mpsq/emacs-native-comp-wayland-builder:latest
+    container:
+      image: mpsq/emacs-native-comp-wayland-builder:latest
+      options: --user root
     steps:
       - name: Get name
         run: |
-          sudo echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
+          echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ env.emacs_artifact_name }}
