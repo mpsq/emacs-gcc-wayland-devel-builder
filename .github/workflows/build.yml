@@ -31,10 +31,18 @@ jobs:
       image: mpsq/emacs-native-comp-wayland-builder:latest
       options: --user root
     steps:
-      - name: Get name
+      - name: Prepare artifacts
         run: |
-          echo "emacs_artifact_name=$(ls /home/pcr)" >> $GITHUB_ENV
+          cd /home/pcr
+          mkdir sources
+          ver=$(ls emacs* | sed -r 's/.*([0-9]{2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{6}).*/\1/gi')
+          #git clone ssh://aur@aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
+          #old_ver=$(cat PKGBUILD | grep "pkgver=" | sed -r 's/pkgver=//')
+          #[[ "$old_ver" == "$ver" ]] && exit 1
+          echo "pkg_version=$ver" >> $GITHUB_ENV
+          tar xf "$(ls emacs*)" -C sources
+          rm sources/.BUILDINFO sources/.MTREE sources/.PKGINFO
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.emacs_artifact_name }}
-          path: /home/pcr/${{ env.emacs_artifact_name }}
+          name: emacs-gcc-wayland-devel-${{ env.pkg_version }}
+          path: /home/pcr/sources
