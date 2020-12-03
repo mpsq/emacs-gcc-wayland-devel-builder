@@ -68,3 +68,40 @@ jobs:
           asset_path: /home/pcr/${{ env.pkg_version }}.tar.gz
           asset_name: ${{ env.pkg_version }}.tar.gz
           asset_content_type: application/gzip
+      - name: Prepare and push new version to AUR
+        env:
+          PKG_VERSION: ${{ env.pkg_version }}
+          PRIV_KEY: ${{ secrets.PRIV_KEY }}
+          PUB_KEY: ${{ secrets.PUB_KEY }}
+          RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+        run: |
+          cd /home/pcr
+          pacman -S git
+          sudo -u pcr bash
+          mkdir .ssh
+          chmod 700 .ssh
+          echo "$PUB_KEY" >> .ssh/id_aur.pub
+          echo "$PRIV_KEY" >> .ssh/id_aur
+          chmod 644 .ssh/id_aur.pub
+          chmod 600 .ssh/id_aur
+          cat <<EOT >> .ssh/config
+          Host aur.archlinux.org
+            IdentityFile ~/.ssh/id_aur
+            User aur
+          EOT
+          chmod 644 .ssh/config
+          cat <<EOT >> .gitconfig
+          [user]
+            name = Méril Pilon
+            email = meril.pilon@gmail.com
+          line 2
+          EOT
+          sum=$(sha512sum /home/pcr/"$PKG_VERSION".tar.gz | sed -r 's/(.*)\s.*/\1/')
+          git clone ssh://aur@aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
+          cd emacs-gcc-wayland-devel-bin
+          cat PKGBUILD | sed -r 's~pkgver=.*~pkgver='$PKG_VERSION'~'
+          cat PKGBUILD | sed -r 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~'
+          makepkg --printsrcinfo > .SRCINFO
+          git add .SRCINFO PKGBUILD
+          git commit -m "Bump to $PKG_VERSION"
+          git push origin master
