@@ -1,11 +1,17 @@
 on:
   schedule:
-    - cron: "0 4,10,16,22 * * *"
+    - cron: "30 * * * *"
 
 jobs:
   image:
     runs-on: ubuntu-latest
     steps:
+      - name: Detect new commit
+        run: |
+          upstream=$(curl -I -k "$GITHUB_API_URL"/repos/flatwhatson/emacs/commits?per_page=1 | sed -n '/^[Ll]ink:/ s/.*"next".*page=\([0-9]*\).*"last".*/\1/p')
+          release=$(curl "$GITHUB_API_URL"/repos/"$GITHUB_REPOSITORY"/releases/latest | jq -r .tag_name | sed -r 's/.*([0-9]{6})/\1/')
+          # Check if a new release is needed
+          [[ "$upstream" -eq "$release" ]] && exit 1
       - uses: actions/checkout@v2
       - name: Set up Docker Buildx
         id: buildx
@@ -36,10 +42,6 @@ jobs:
           pacman --noconfirm -S jq
           cd /home/pcr
           version=$(ls emacs* | sed -r 's/.*([0-9]{2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{6}).*/\1/gi')
-          release=$(curl "$GITHUB_API_URL"/repos/"$GITHUB_REPOSITORY"/releases/latest | jq .tag_name)
-          # Check if a new release is needed
-          [[ "$version" == "$release" ]] && exit 1
-          # Let's build the artifacts then!
           echo "pkg_version=$version" >> $GITHUB_ENV
           mkdir pkg
           tar xf "$(ls emacs*)" -C pkg
