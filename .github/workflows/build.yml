@@ -10,8 +10,10 @@ jobs:
         run: |
           upstream=$(curl -I -k "$GITHUB_API_URL"/repos/flatwhatson/emacs/commits?per_page=1 | sed -n '/^[Ll]ink:/ s/.*"next".*page=\([0-9]*\).*"last".*/\1/p')
           release=$(curl "$GITHUB_API_URL"/repos/"$GITHUB_REPOSITORY"/releases/latest | jq -r .tag_name | sed -r 's/.*([0-9]{6})/\1/')
+          echo $upstream
+          echo $release
           # Check if a new release is needed
-          [[ "$upstream" -eq "$release" ]] && exit 1
+          [[ "$upstream" == "$release" ]] && exit 1
       - uses: actions/checkout@v2
       - name: Set up Docker Buildx
         id: buildx
