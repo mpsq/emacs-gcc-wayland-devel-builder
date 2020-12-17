@@ -4,7 +4,7 @@ If the answer to those is "yes":
 
 - Do you want to use Emacs with native compilation enabled?
 - Do you want to use Emacs with Wayland support?
-- Are you using Arch Linux?
+- [Optional] Are you using Arch Linux?
 
 Then you might be interested in this repository. If you want all of those but
 you are not using Arch Linux, you can still go to the
@@ -20,6 +20,14 @@ found at [github.com/flatwhatson/emacs](https://github.com/flatwhatson/emacs).
 Arch Linux users can install the binaries directly from `AUR` using the
 [emacs-gcc-wayland-devel-bin](https://aur.archlinux.org/packages/emacs-gcc-wayland-devel-bin/)
 package.
+
+# Why?
+
+Because [native comp](https://www.emacswiki.org/emacs/GccEmacs) is
+[fast](https://akrl.sdf.org/gccemacs.html),
+[wayland support](https://github.com/masm11/emacs) means optimal hidpi support,
+and you now have a convenient way of using the "devel" version of Emacs without
+having to compile it yourself.
 
 # I want to improve X
 
