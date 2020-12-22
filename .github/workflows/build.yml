@@ -76,7 +76,7 @@ jobs:
           #   3. First sed to remove "Merge" commits
           #   4. Second sed to remove any special char at the beginning of the message
           #   5. Third sed to prepend the message with "- "
-          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .url + ")"' | sed '/^Merge/,+1 d' | sed 's/^[^[:alnum:]]*//' | sed -r 's/(.*)/- \1/' >> body.md
+          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | sed '/^Merge/,+1 d' | sed 's/^[^[:alnum:]]*//' | sed -r 's/(.*)/- \1/' >> body.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
