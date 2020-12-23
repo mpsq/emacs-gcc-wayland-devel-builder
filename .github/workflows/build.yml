@@ -124,6 +124,7 @@ jobs:
           # Amend PKG
           sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
           sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$PKG_SUM"'"\)~' PKGBUILD
+          sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
           chown pcr:pcr PKGBUILD
           rm .SRCINFO
           su pcr -c "makepkg --printsrcinfo > .SRCINFO"
