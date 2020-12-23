@@ -68,8 +68,8 @@ jobs:
           echo "pkg_sum=$sum" >> $GITHUB_ENV
           # Get release body
           delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
-          echo -en "# Short summary\n\n" > body.md
-          echo -en "Check [upstream](https://github.com//flatwhatson/emacs/commits) for more details.\n\n" >> body.md
+          echo -en "# Commits since last release\n\n" > body.md
+          echo -en "Check [upstream](https://github.com//flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
           # What is going on here?
           #   1. We get the list of commits since last release
           #   2. We use jq to parse and retain only the commit message + its url
