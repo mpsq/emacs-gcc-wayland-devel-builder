@@ -70,13 +70,17 @@ jobs:
           delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
           echo -en "# Commits since last release\n\n" > body.md
           echo -en "Check [upstream](https://github.com//flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
-          # What is going on here?
+          # Next command:
           #   1. We get the list of commits since last release
           #   2. We use jq to parse and retain only the commit message + its url
           #   3. First sed to remove "Merge" commits
           #   4. Second sed to remove any special char at the beginning of the message
           #   5. Third sed to prepend the message with "- "
-          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | sed '/^Merge/,+1 d' | sed 's/^[^[:alnum:]]*//' | sed -r 's/(.*)/- \1/' >> body.md
+          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" |
+            jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' |
+            sed '/^Merge/,+1 d' |
+            sed 's/^[^[:alnum:]]*//' |
+            sed -r 's/(.*)/- \1/' >> body.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
