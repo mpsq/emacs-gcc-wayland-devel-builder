@@ -56,31 +56,34 @@ jobs:
         run: |
           pacman --noconfirm -S jq openssh bc
           cd /home/pcr
-          # Get version number
+
+          # Get/set version number
           version=$(ls emacs* | sed -r 's/.*([0-9]{2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{6}).*/\1/gi')
           echo "pkg_version=$version" >> $GITHUB_ENV
-          # Clean artifact
+
+          # Unpack artifacts
           mkdir pkg
           tar xf "$(ls emacs*)" -C pkg
           rm pkg/.BUILDINFO pkg/.MTREE pkg/.PKGINFO
           tar czf "$version".tar.gz -C pkg .
           sum=$(sha512sum "$version".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
           echo "pkg_sum=$sum" >> $GITHUB_ENV
+
           # Get release body
           delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
           echo -en "# Commits since last release\n\n" > body.md
           echo -en "Check [upstream](https://github.com//flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
-          # Next command:
-          #   1. We get the list of commits since last release
-          #   2. We use jq to parse and retain only the commit message + its url
-          #   3. First sed to remove "Merge" commits
-          #   4. Second sed to remove any special char at the beginning of the message
-          #   5. Third sed to prepend the message with "- "
-          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" |
-            jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' |
-            sed '/^Merge/,+1 d' |
-            sed 's/^[^[:alnum:]]*//' |
-            sed -r 's/(.*)/- \1/' >> body.md
+
+          # Get the list of commits since last release
+          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | \
+          # Parse and retain only the commit message + its url
+          jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
+          # Remove "Merge" commits
+          sed '/^Merge/,+1 d' | \
+          # Remove any special char at the beginning of the message
+          sed 's/^[^[:alnum:]]*//' | \
+          # Prepend "- " to the message
+          sed -r 's/(.*)/- \1/' >> body.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -111,6 +114,7 @@ jobs:
         run: |
           cd /root
           mkdir .ssh
+
           # Setup SSH
           echo "$PUB_KEY" | tr -d '\r' > .ssh/id_aur.pub
           echo "$PRIV_KEY" | base64 --decode > .ssh/id_aur
@@ -118,6 +122,7 @@ jobs:
           echo -en 'Host aur.archlinux.org\n  IdentityFile /root/.ssh/id_aur\n  User aur\n' > .ssh/config
           ssh-keyscan aur.archlinux.org > .ssh/known_hosts
           ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
+
           # Setup git
           cd /home/pcr
           git config --global user.name "Méril Pilon"
@@ -125,13 +130,15 @@ jobs:
           git clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
           chown -R pcr:pcr emacs-gcc-wayland-devel-bin
           cd emacs-gcc-wayland-devel-bin
-          # Amend PKG
+
+          # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
           sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
           sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$PKG_SUM"'"\)~' PKGBUILD
           sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
           chown pcr:pcr PKGBUILD
           rm .SRCINFO
           su pcr -c "makepkg --printsrcinfo > .SRCINFO"
+
           # Push changes
           git add .SRCINFO PKGBUILD
           git commit -m "Bump to $PKG_VERSION"
