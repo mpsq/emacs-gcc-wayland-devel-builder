@@ -33,51 +33,46 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
-          push: true
-          tags: mpsq/emacs-native-comp-wayland-builder:latest
 
   artifact:
     runs-on: ubuntu-latest
     needs: [image]
     container:
-      image: mpsq/emacs-native-comp-wayland-builder:latest
-      options: --user root
+      image: mpsq/emacs-builder:latest
     env:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
     steps:
       - name: Prepare artifacts
         run: |
-          pacman --noconfirm -S jq openssh bc
-          cd /home/pcr
+          ./pull.bash
 
           # Get/set version number
-          version=$(ls emacs* | sed -r 's/.*([0-9]{2}\.[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{6}).*/\1/gi')
+          version=$(grep AC_INIT configure.ac | sed -e 's/^.\+\ \([0-9]\+\.[0-9]\+\.[0-9]\+\?\).\+$/\1/')
+          version+="."
+          version+="$NEW_COMMIT_N"
           echo "pkg_version=$version" >> $GITHUB_ENV
 
+          makepkg
+
           # Unpack artifacts
-          mkdir pkg
-          tar xf "$(ls emacs*)" -C pkg
-          rm pkg/.BUILDINFO pkg/.MTREE pkg/.PKGINFO
-          tar czf "$version".tar.gz -C pkg .
+          mkdir out
+          tar xf emacs-1-1-x86_64.pkg.tar.zst -C out
+          rm emacs-1-1-x86_64.pkg.tar.zst
+          rm out/.BUILDINFO out/.MTREE out/.PKGINFO
+          tar czf "$version".tar.gz -C out .
           sum=$(sha512sum "$version".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
           echo "pkg_sum=$sum" >> $GITHUB_ENV
 
           # Get release body
           delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
           echo -en "# Commits since last release\n\n" > body.md
-          echo -en "Check [upstream](https://github.com//flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
+          echo -en "Check [upstream](https://github.com/flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
 
           # Get the list of commits since last release
           curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | \
           # Parse and retain only the commit message + its url
-          jq -r '.[].commit | (.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
+          jq -r '.[] | (.commit.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
           # Remove "Merge" commits
           sed '/^Merge/,+1 d' | \
           # Remove any special char at the beginning of the message
@@ -112,32 +107,28 @@ jobs:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           PUB_KEY: ${{ secrets.PUB_KEY }}
         run: |
-          cd /root
           mkdir .ssh
 
           # Setup SSH
           echo "$PUB_KEY" | tr -d '\r' > .ssh/id_aur.pub
           echo "$PRIV_KEY" | base64 --decode > .ssh/id_aur
           chmod 600 .ssh/id_aur
-          echo -en 'Host aur.archlinux.org\n  IdentityFile /root/.ssh/id_aur\n  User aur\n' > .ssh/config
+          echo -en 'Host aur.archlinux.org\n  IdentityFile /home/pcr/.ssh/id_aur\n  User aur\n' > .ssh/config
           ssh-keyscan aur.archlinux.org > .ssh/known_hosts
           ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
 
           # Setup git
-          cd /home/pcr
           git config --global user.name "Méril Pilon"
           git config --global user.email "me@mpsq.org"
           git clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
-          chown -R pcr:pcr emacs-gcc-wayland-devel-bin
           cd emacs-gcc-wayland-devel-bin
 
           # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
           sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
           sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$PKG_SUM"'"\)~' PKGBUILD
           sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
-          chown pcr:pcr PKGBUILD
           rm .SRCINFO
-          su pcr -c "makepkg --printsrcinfo > .SRCINFO"
+          makepkg --printsrcinfo > .SRCINFO
 
           # Push changes
           git add .SRCINFO PKGBUILD

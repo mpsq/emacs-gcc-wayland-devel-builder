@@ -35,13 +35,9 @@ Please create an issue (or, even better, a PR).
 
 # Thanks
 
-All the hard work is done by other people:
-
 - [github.com/masm11](https://github.com/masm11) for the Wayland support
-- [github.com/flatwhatson](https://github.com/flatwhatson) for maitaining a
+- [github.com/flatwhatson](https://github.com/flatwhatson) for maintaining a
   [clean branch](https://github.com/flatwhatson/emacs) with Wayland support
-- [github.com/VitalyAnkh](https://github.com/VitalyAnkh) for
-  [emacs-native-comp-git-enhanced](https://aur.archlinux.org/packages/emacs-native-comp-git-enhanced/)
 - Obviously [core Emacs maintainers](https://www.gnu.org/people/people.en.html)!
 
 # Related
