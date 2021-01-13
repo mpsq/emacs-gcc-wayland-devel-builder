@@ -14,7 +14,7 @@ env:
   UPSTREAM_GH: https://api.github.com/repos/flatwhatson/emacs
 
 jobs:
-  image:
+  check:
     runs-on: ubuntu-latest
     env:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
@@ -24,35 +24,33 @@ jobs:
         run: |
           # Check if a new release is needed
           if ["$OLD_COMMIT_N" == "$NEW_COMMIT_N" ]; then exit 1; else exit 0; fi
-      - uses: actions/checkout@v2
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@master
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set env var
+        id: var
+        run: |
+          VER=$(curl -s https://raw.githubusercontent.com/flatwhatson/emacs/pgtk-nativecomp/configure.ac | grep AC_INIT | sed -e 's/^.\+\ \([0-9]\+\.[0-9]\+\.[0-9]\+\?\).\+$/\1/')
+          VER+="."
+          VER+="$NEW_COMMIT_N"
+          export VER="${VER}"
+          echo "::set-output name=ver::${VER}"
+    outputs:
+      ver: ${{ steps.var.outputs.ver }}
 
   artifact:
     runs-on: ubuntu-latest
-    needs: [image]
+    needs: check
     container:
       image: mpsq/emacs-builder:latest
     env:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
+      PKG_VERSION: ${{ needs.check.outputs.ver }}
     steps:
       - name: Prepare artifacts
         run: |
+          cd /home/pcr
+
+          # Create artifacts
           ./pull.bash
-
-          # Get/set version number
-          version=$(grep AC_INIT configure.ac | sed -e 's/^.\+\ \([0-9]\+\.[0-9]\+\.[0-9]\+\?\).\+$/\1/')
-          version+="."
-          version+="$NEW_COMMIT_N"
-          echo "pkg_version=$version" >> $GITHUB_ENV
-
           makepkg
 
           # Unpack artifacts
@@ -60,9 +58,7 @@ jobs:
           tar xf emacs-1-1-x86_64.pkg.tar.zst -C out
           rm emacs-1-1-x86_64.pkg.tar.zst
           rm out/.BUILDINFO out/.MTREE out/.PKGINFO
-          tar czf "$version".tar.gz -C out .
-          sum=$(sha512sum "$version".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
-          echo "pkg_sum=$sum" >> $GITHUB_ENV
+          tar czf "$PKG_VERSION".tar.gz -C out .
 
           # Get release body
           delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
@@ -85,8 +81,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.pkg_version }}
-          release_name: Release ${{ env.pkg_version }}
+          tag_name: ${{ needs.check.outputs.ver }}
+          release_name: Release ${{ needs.check.outputs.ver }}
           body_path: /home/pcr/body.md
           draft: false
           prerelease: false
@@ -97,19 +93,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /home/pcr/${{ env.pkg_version }}.tar.gz
-          asset_name: ${{ env.pkg_version }}.tar.gz
+          asset_path: /home/pcr/${{ needs.check.outputs.ver }}.tar.gz
+          asset_name: ${{ needs.check.outputs.ver }}.tar.gz
           asset_content_type: application/gzip
       - name: Prepare and push new version to AUR
         env:
-          PKG_SUM: ${{ env.pkg_sum }}
-          PKG_VERSION: ${{ env.pkg_version }}
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           PUB_KEY: ${{ secrets.PUB_KEY }}
         run: |
-          mkdir .ssh
+          cd /home/pcr
+
+          # Checksum artifacts
+          sum=$(sha512sum "$PKG_VERSION".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
 
           # Setup SSH
+          mkdir .ssh
           echo "$PUB_KEY" | tr -d '\r' > .ssh/id_aur.pub
           echo "$PRIV_KEY" | base64 --decode > .ssh/id_aur
           chmod 600 .ssh/id_aur
@@ -118,19 +116,18 @@ jobs:
           ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
 
           # Setup git
-          git config --global user.name "Méril Pilon"
-          git config --global user.email "me@mpsq.org"
-          git clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
+          alias mygit="git -c user.name=Méril\ Pilon -c user.email=me@mpsq.org"
+          mygit clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
           cd emacs-gcc-wayland-devel-bin
 
           # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
           sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
-          sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$PKG_SUM"'"\)~' PKGBUILD
+          sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
           sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
           rm .SRCINFO
           makepkg --printsrcinfo > .SRCINFO
 
           # Push changes
-          git add .SRCINFO PKGBUILD
-          git commit -m "Bump to $PKG_VERSION"
-          git push origin master
+          mygit add .SRCINFO PKGBUILD
+          mygit commit -m "Bump to $PKG_VERSION"
+          mygit push origin master
