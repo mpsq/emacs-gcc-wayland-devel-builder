@@ -48,10 +48,13 @@ RUN pacman -Syu --noconfirm && \
   chmod 0440 /etc/sudoers.d/user
 
 WORKDIR /home/pcr
-USER pcr
 
 COPY PKGBUILD .
 COPY pull.bash .
+COPY makepkg.conf .
+
+RUN chown -R pcr:pcr /home/pcr
+USER pcr
 
 ENV CC="/usr/bin/clang" \
   CXX="/usr/bin/clang++" \
@@ -63,5 +66,5 @@ ENV CC="/usr/bin/clang" \
   CXXFLAGS="-g -flto -fuse-ld=lld"
 
 RUN ["./pull.bash"]
-RUN makepkg && \
+RUN makepkg --config makepkg.conf && \
   rm emacs-1-1-x86_64.pkg.tar.zst

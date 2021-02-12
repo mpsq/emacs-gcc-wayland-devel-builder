@@ -49,8 +49,19 @@ jobs:
         run: |
           cd /home/pcr
 
-          # Create artifacts
+          # Debug
+          whoami
+          pwd
+          ls -lah
+
+          # Get sources
           ./pull.bash
+
+          # Conf
+          mkdir -p ~/.config/pacman
+          cp makepkg.conf ~/.config/pacman
+
+          # Create artifacts
           makepkg
 
           # Unpack artifacts
