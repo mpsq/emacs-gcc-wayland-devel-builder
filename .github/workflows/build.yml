@@ -20,10 +20,10 @@ jobs:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
     steps:
-      - name: Check last version
-        run: bash ./ci/check-last-version.bash
       - name: Checkout the repo
         uses: actions/checkout@v2
+      - name: Check last version
+        run: bash ./ci/check-last-version.bash
       - name: Set env vars
         id: var
         run: . ./ci/set-env-vars.bash
