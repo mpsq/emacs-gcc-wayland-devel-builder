@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euxo pipefail
+shopt -s expand_aliases
 
 cd /home/pcr
 
