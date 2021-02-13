@@ -25,11 +25,11 @@ echo -en "Check [upstream](https://github.com/flatwhatson/emacs/commits) for the
 
 # Get the list of commits since last release
 curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | \
-# Parse and retain only the commit message + its url
-jq -r '.[] | (.commit.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
-# Remove "Merge" commits
-sed '/^Merge/,+1 d' | \
-# Remove any special char at the beginning of the message
-sed 's/^[^[:alnum:]]*//' | \
-# Prepend "- " to the message
-sed -r 's/(.*)/- \1/' >> body.md
+  # Parse and retain only the commit message + its url
+  jq -r '.[] | (.commit.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
+  # Remove "Merge" commits
+  sed '/^Merge/,+1 d' | \
+  # Remove any special char at the beginning of the message
+  sed 's/^[^[:alnum:]]*//' | \
+  # Prepend "- " to the message
+  sed -r 's/(.*)/- \1/' >> body.md
