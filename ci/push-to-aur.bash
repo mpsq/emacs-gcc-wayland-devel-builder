@@ -20,16 +20,17 @@ ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
 # Setup git
 alias mygit="git -c user.name=Méril\ Pilon -c user.email=me@mpsq.org"
 mygit clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
-cd emacs-gcc-wayland-devel-bin
+mv emacs-gcc-wayland-devel-bin /home/pcr
+chown -R pcr:pcr /home/pcr/emacs-gcc-wayland-devel-bin
+cd /home/pcr/emacs-gcc-wayland-devel-bin
 
 # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
 sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
 sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
 sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
 rm .SRCINFO
-chown -R pcr:pcr .
 su pcr -c "makepkg --printsrcinfo" > .SRCINFO
-chown -R root:root .
+chown -R pcr:pcr .SRCINFO
 
 # Push changes
 mygit add .SRCINFO PKGBUILD
