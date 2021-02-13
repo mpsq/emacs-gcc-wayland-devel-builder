@@ -45,8 +45,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Patch glibc
         run: bash ./ci/patch-glibc.bash
-      - name: Prepare artifacts
-        run: bash ./ci/prepare-artifacts.bash
+      - name: Build artifacts
+        run: bash ./ci/build-artifacts.bash
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
