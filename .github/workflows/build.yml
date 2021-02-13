@@ -20,18 +20,13 @@ jobs:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
     steps:
-      - name: Detect new commit
-        run: |
-          # Check if a new release is needed
-          if ["$OLD_COMMIT_N" == "$NEW_COMMIT_N" ]; then exit 1; else exit 0; fi
-      - name: Set env var
+      - name: Check last version
+        run: bash ./ci/check-last-version.bash
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      - name: Set env vars
         id: var
-        run: |
-          VER=$(curl -s https://raw.githubusercontent.com/flatwhatson/emacs/pgtk-nativecomp/configure.ac | grep AC_INIT | sed -e 's/^.\+\ \([0-9]\+\.[0-9]\+\.[0-9]\+\?\).\+$/\1/')
-          VER+="."
-          VER+="$NEW_COMMIT_N"
-          export VER="${VER}"
-          echo "::set-output name=ver::${VER}"
+        run: . ./ci/set-env-vars.bash
     outputs:
       ver: ${{ steps.var.outputs.ver }}
 
@@ -46,47 +41,13 @@ jobs:
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
       PKG_VERSION: ${{ needs.check.outputs.ver }}
     steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
       - name: Patch glibc
-        run: |
-          # Work-around the issue with glibc 2.33 on old Docker engines
-          # Extract files directly as pacman is also affected by the issue
-          patched_glibc=glibc-linux4-2.33-4-x86_64.pkg.tar.zst
-          curl -LO https://repo.archlinuxcn.org/x86_64/$patched_glibc
-          bsdtar -C / -xvf $patched_glibc
+        run: bash ./ci/patch-glibc.bash
       - name: Prepare artifacts
-        run: |
-          cd /home/pcr
-
-          # Get sources
-          ./pull.bash
-          chown -R pcr:pcr emacs
-
-          # Create artifacts
-          su pcr -c "makepkg"
-
-          # Unpack artifacts
-          mkdir out
-          tar xf emacs-1-1-x86_64.pkg.tar.zst -C out
-          rm emacs-1-1-x86_64.pkg.tar.zst
-          rm out/.BUILDINFO out/.MTREE out/.PKGINFO
-          tar czf "$PKG_VERSION".tar.gz -C out .
-
-          # Get release body
-          delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
-          echo -en "# Commits since last release\n\n" > body.md
-          echo -en "Check [upstream](https://github.com/flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
-
-          # Get the list of commits since last release
-          curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | \
-          # Parse and retain only the commit message + its url
-          jq -r '.[] | (.commit.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
-          # Remove "Merge" commits
-          sed '/^Merge/,+1 d' | \
-          # Remove any special char at the beginning of the message
-          sed 's/^[^[:alnum:]]*//' | \
-          # Prepend "- " to the message
-          sed -r 's/(.*)/- \1/' >> body.md
-      - name: Create Release
+        run: bash ./ci/prepare-artifacts.bash
+      - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -97,7 +58,7 @@ jobs:
           body_path: /home/pcr/body.md
           draft: false
           prerelease: false
-      - name: Upload Release Asset
+      - name: Upload release asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -107,38 +68,8 @@ jobs:
           asset_path: /home/pcr/${{ needs.check.outputs.ver }}.tar.gz
           asset_name: ${{ needs.check.outputs.ver }}.tar.gz
           asset_content_type: application/gzip
-      - name: Prepare and push new version to AUR
+      - name: Push to AUR
         env:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           PUB_KEY: ${{ secrets.PUB_KEY }}
-        run: |
-          cd /home/pcr
-
-          # Checksum artifacts
-          sum=$(sha512sum "$PKG_VERSION".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
-
-          # Setup SSH
-          mkdir .ssh
-          echo "$PUB_KEY" | tr -d '\r' > .ssh/id_aur.pub
-          echo "$PRIV_KEY" | base64 --decode > .ssh/id_aur
-          chmod 600 .ssh/id_aur
-          echo -en 'Host aur.archlinux.org\n  IdentityFile /home/pcr/.ssh/id_aur\n  User aur\n' > .ssh/config
-          ssh-keyscan aur.archlinux.org > .ssh/known_hosts
-          ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
-
-          # Setup git
-          alias mygit="git -c user.name=Méril\ Pilon -c user.email=me@mpsq.org"
-          mygit clone ssh://aur.archlinux.org/emacs-gcc-wayland-devel-bin.git
-          cd emacs-gcc-wayland-devel-bin
-
-          # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
-          sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
-          sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
-          sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
-          rm .SRCINFO
-          su pcr -c "makepkg --printsrcinfo > .SRCINFO"
-
-          # Push changes
-          mygit add .SRCINFO PKGBUILD
-          mygit commit -m "Bump to $PKG_VERSION"
-          mygit push origin master
+        run: bash ./ci/push-to-aur.bash
