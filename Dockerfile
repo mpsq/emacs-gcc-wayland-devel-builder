@@ -51,7 +51,6 @@ WORKDIR /home/pcr
 
 COPY PKGBUILD .
 COPY pull.bash .
-COPY makepkg.conf .
 
 RUN chown -R pcr:pcr /home/pcr
 USER pcr
@@ -66,5 +65,5 @@ ENV CC="/usr/bin/clang" \
   CXXFLAGS="-g -flto -fuse-ld=lld"
 
 RUN ["./pull.bash"]
-RUN makepkg --config makepkg.conf && \
+RUN makepkg && \
   rm emacs-1-1-x86_64.pkg.tar.zst
