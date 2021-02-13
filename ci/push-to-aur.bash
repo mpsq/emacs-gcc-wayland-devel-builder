@@ -13,7 +13,7 @@ mkdir .ssh
 echo "$PUB_KEY" | tr -d '\r' > .ssh/id_aur.pub
 echo "$PRIV_KEY" | base64 --decode > .ssh/id_aur
 chmod 600 .ssh/id_aur
-echo -en 'Host aur.archlinux.org\n  IdentityFile /home/pcr/.ssh/id_aur\n  User aur\n' > .ssh/config
+echo -en 'Host aur.archlinux.org\n  IdentityFile /root/.ssh/id_aur\n  User aur\n' > .ssh/config
 ssh-keyscan aur.archlinux.org > .ssh/known_hosts
 ssh-keyscan 95.216.144.15 >> .ssh/known_hosts
 
