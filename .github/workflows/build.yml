@@ -40,23 +40,26 @@ jobs:
     needs: check
     container:
       image: mpsq/emacs-builder:latest
+      options: --user root
     env:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
       PKG_VERSION: ${{ needs.check.outputs.ver }}
     steps:
-      - name: Prepare artifacts
+      - name: Patch glibc
         run: |
-          cd /home/pcr
-
-          # Get sources
-          ./pull.bash
-
           # Work-around the issue with glibc 2.33 on old Docker engines
           # Extract files directly as pacman is also affected by the issue
           patched_glibc=glibc-linux4-2.33-4-x86_64.pkg.tar.zst
           curl -LO https://repo.archlinuxcn.org/x86_64/$patched_glibc
           bsdtar -C / -xvf $patched_glibc
+      - name: Prepare artifacts
+        run: |
+          su - pcr
+          cd /home/pcr
+
+          # Get sources
+          ./pull.bash
 
           # Create artifacts
           makepkg
@@ -83,6 +86,8 @@ jobs:
           sed 's/^[^[:alnum:]]*//' | \
           # Prepend "- " to the message
           sed -r 's/(.*)/- \1/' >> body.md
+
+          exit
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -109,6 +114,7 @@ jobs:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           PUB_KEY: ${{ secrets.PUB_KEY }}
         run: |
+          su - pcr
           cd /home/pcr
 
           # Checksum artifacts
@@ -139,3 +145,5 @@ jobs:
           mygit add .SRCINFO PKGBUILD
           mygit commit -m "Bump to $PKG_VERSION"
           mygit push origin master
+
+          exit
