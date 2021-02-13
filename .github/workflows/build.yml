@@ -15,7 +15,7 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
       NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
@@ -36,7 +36,7 @@ jobs:
       ver: ${{ steps.var.outputs.ver }}
 
   artifact:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: check
     container:
       image: mpsq/emacs-builder:latest
@@ -49,17 +49,8 @@ jobs:
         run: |
           cd /home/pcr
 
-          # Debug
-          whoami
-          pwd
-          ls -lah
-
           # Get sources
           ./pull.bash
-
-          # Conf
-          mkdir -p ~/.config/pacman
-          cp makepkg.conf ~/.config/pacman
 
           # Create artifacts
           makepkg
