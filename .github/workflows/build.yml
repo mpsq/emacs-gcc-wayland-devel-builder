@@ -55,14 +55,14 @@ jobs:
           bsdtar -C / -xvf $patched_glibc
       - name: Prepare artifacts
         run: |
-          su - pcr
           cd /home/pcr
 
           # Get sources
           ./pull.bash
+          chown -R pcr:pcr emacs
 
           # Create artifacts
-          makepkg
+          su pcr -c "makepkg"
 
           # Unpack artifacts
           mkdir out
@@ -86,8 +86,6 @@ jobs:
           sed 's/^[^[:alnum:]]*//' | \
           # Prepend "- " to the message
           sed -r 's/(.*)/- \1/' >> body.md
-
-          exit
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -114,7 +112,6 @@ jobs:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           PUB_KEY: ${{ secrets.PUB_KEY }}
         run: |
-          su - pcr
           cd /home/pcr
 
           # Checksum artifacts
@@ -139,11 +136,9 @@ jobs:
           sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
           sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
           rm .SRCINFO
-          makepkg --printsrcinfo > .SRCINFO
+          su pcr -c "makepkg --printsrcinfo > .SRCINFO"
 
           # Push changes
           mygit add .SRCINFO PKGBUILD
           mygit commit -m "Bump to $PKG_VERSION"
           mygit push origin master
-
-          exit
