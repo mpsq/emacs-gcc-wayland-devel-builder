@@ -27,7 +27,9 @@ sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
 sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
 sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
 rm .SRCINFO
+chown -R pcr:pcr .
 su pcr -c "makepkg --printsrcinfo" > .SRCINFO
+chown -R root:root .
 
 # Push changes
 mygit add .SRCINFO PKGBUILD
