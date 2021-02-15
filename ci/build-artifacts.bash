@@ -21,10 +21,10 @@ tar czf "$PKG_VERSION".tar.gz -C out .
 # Get release body
 delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
 echo -en "# Commits since last release\n\n" > body.md
-echo -en "Check [upstream](https://github.com/flatwhatson/emacs/commits) for the full history.\n\n" >> body.md
+echo -en "Check [upstream]("$UPSTREAM_REPO"/commits) for the full history.\n\n" >> body.md
 
 # Get the list of commits since last release
-curl -s "$UPSTREAM_GH"/commits?per_page="$delta" | \
+curl -s "$UPSTREAM_API"/commits?per_page="$delta" | \
   # Parse and retain only the commit message + its url
   jq -r '.[] | (.commit.message | capture("(?<id>.+)\n").id) + " [commit](" + .html_url + ")"' | \
   # Remove "Merge" commits
