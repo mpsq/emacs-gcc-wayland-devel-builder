@@ -1,33 +1,41 @@
-# Emacs with native compilation ("gcc") + Wayland support
+<!-- prettier-ignore-start -->
+<div align="center">
+    <img src=".github/icon.svg" width="200" />
+</div>
+<!-- prettier-ignore-end -->
 
-If the answer to those is "yes":
+# Emacs with native compilation ("gcc") and Wayland support
 
-- Do you want to use Emacs with native compilation enabled?
-- Do you want to use Emacs with Wayland support?
-- [Optional] Are you using Arch Linux?
+Because [native-comp](https://www.emacswiki.org/emacs/GccEmacs) is
+[fast](https://akrl.sdf.org/gccemacs.html),
+[Wayland/GTK3 support](https://github.com/masm11/emacs) means optimal HiDPI,
+cleaner/simpler dependencies, no XWayland, etc. This package is also a
+convenient way of using the "devel" version of Emacs without having to compile
+it yourself.
 
-Then you might be interested in this repository. If you want all of those but
-you are not using Arch Linux, you can still go to the
+Note: we do not patch / amend or modify Emacs directly, this is a _vanilla_
+binary of Emacs with specific compilation flags.
+
+# How to get it
+
+## Arch Linux
+
+Use the `AUR`
+[package](https://aur.archlinux.org/packages/emacs-gcc-wayland-devel-bin/):
+
+```sh
+yay -S emacs-gcc-wayland-devel-bin # or any other AUR helper
+```
+
+## Others
+
+If you are not using Arch Linux, you can still go to the
 [release page](https://github.com/mpsq/emacs-gcc-wayland-devel-builder/releases)
 and grab the latest binaries.
 
-# What is this?
-
-This repository is just a factory that creates Emacs binaries for `x64` so you
-don't have to do it yourself. The base Emacs branch that this repo builds can be
-found at [github.com/flatwhatson/emacs](https://github.com/flatwhatson/emacs).
-
-Arch Linux users can install the binaries directly from `AUR` using the
-[emacs-gcc-wayland-devel-bin](https://aur.archlinux.org/packages/emacs-gcc-wayland-devel-bin/)
-package.
-
-# Why?
-
-Because [native comp](https://www.emacswiki.org/emacs/GccEmacs) is
-[fast](https://akrl.sdf.org/gccemacs.html),
-[wayland support](https://github.com/masm11/emacs) means optimal hidpi support,
-and you now have a convenient way of using the "devel" version of Emacs without
-having to compile it yourself.
+Based on demand, I might add compiled packages for other Linux distributions, if
+you are interested, let me know in the
+[issues](https://github.com/mpsq/emacs-gcc-wayland-devel-builder/issues).
 
 # I want to improve X
 
@@ -43,4 +51,4 @@ Please create an issue (or, even better, a PR).
 # Related
 
 [github.com/fejfighter/pgtk-emacs-flatpak](https://github.com/fejfighter/pgtk-emacs-flatpak)
-is the same as this repository but based on Flatpak.
+is similar but based on Flatpak.
