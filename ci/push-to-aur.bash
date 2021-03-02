@@ -27,7 +27,7 @@ cd /home/pcr/emacs-gcc-wayland-devel-bin
 # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
 sed -i -r -e 's~pkgver=.*~pkgver='$PKG_VERSION'~' PKGBUILD
 sed -i -r -e 's~sha512sums=.*~sha512sums=\("'"$sum"'"\)~' PKGBUILD
-sed -i -r -e 's/pkgrel=.*/pkgrel=1/' PKGBUILD
+sed -i -r -e 's/pkgrel=.*/pkgrel=2/' PKGBUILD
 rm .SRCINFO
 su pcr -c "makepkg --printsrcinfo" > .SRCINFO
 chown -R pcr:pcr .SRCINFO
