@@ -26,7 +26,7 @@ build() {
     --with-x-toolkit=gtk3
     --with-cairo
     --with-xwidgets
-    --with-nativecomp
+    --with-native-compilation
     --with-pgtk
     --without-compress-install
     --without-gconf
@@ -36,9 +36,9 @@ build() {
     --enable-link-time-optimization
   )
 
-  ./configure --with-nativecomp CC='clang' "${_conf[@]}"
+  ./configure "${_conf[@]}"
 
-  make -j$(nproc)
+  make NATIVE_FAST_BOOT=1
 }
 
 package() {

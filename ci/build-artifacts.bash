@@ -5,6 +5,8 @@ set -euxo pipefail
 cd /home/pcr
 
 # Get sources
+cp /__w/emacs-gcc-wayland-devel-builder/emacs-gcc-wayland-devel-builder/pull.bash pull.bash
+cp /__w/emacs-gcc-wayland-devel-builder/emacs-gcc-wayland-devel-builder/PKGBUILD PKGBUILD
 ./pull.bash
 chown -R pcr:pcr emacs
 
