@@ -10,7 +10,7 @@ source=()
 sha1sums=()
 
 build() {
-  cd /home/pcr/emacs
+  cd "$HOME"/emacs
 
   [[ -x configure ]] || ( ./autogen.sh git && ./autogen.sh autoconf )
 
@@ -42,7 +42,8 @@ build() {
 }
 
 package() {
-  cd /home/pcr/emacs
+  cd "$HOME"/emacs
+
   make DESTDIR="$pkgdir" install
 
   mv "$pkgdir"/usr/bin/{ctags,ctags.emacs}

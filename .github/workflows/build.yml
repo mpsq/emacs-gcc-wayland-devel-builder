@@ -10,22 +10,23 @@ on:
         required: true
 
 env:
-  UPSTREAM_API: https://api.github.com/repos/flatwhatson/emacs
-  UPSTREAM_BRANCH: pgtk-nativecomp
-  UPSTREAM_REPO: https://github.com/flatwhatson/emacs
-  UPSTREAM_SRC: https://raw.githubusercontent.com/flatwhatson/emacs/pgtk-nativecomp
+  OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
+  NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
 
 jobs:
   check:
     runs-on: ubuntu-20.04
-    env:
-      OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
-      NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
       - name: Check last version
         run: bash ./ci/check-last-version.bash
+      - name: Import environment variables
+        shell: bash
+        run: |
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < .env
       - name: Set env vars
         id: var
         run: . ./ci/set-env-vars.bash
@@ -39,12 +40,16 @@ jobs:
       image: mpsq/emacs-builder:latest
       options: --user root
     env:
-      OLD_COMMIT_N: ${{ github.event.inputs.old_commit_n }}
-      NEW_COMMIT_N: ${{ github.event.inputs.new_commit_n }}
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
+      - name: Import environment variables
+        shell: bash
+        run: |
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < .env
       - name: Patch glibc
         run: bash ./ci/patch-glibc.bash
       - name: Build artifacts
@@ -57,7 +62,7 @@ jobs:
         with:
           tag_name: ${{ needs.check.outputs.pkg_version }}
           release_name: Release ${{ needs.check.outputs.pkg_version }}
-          body_path: /home/pcr/body.md
+          body_path: ${{ env.HOME }}/body.md
           draft: false
           prerelease: false
       - name: Upload release asset
@@ -67,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /home/pcr/${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_path: ${{ env.HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_content_type: application/gzip
       - name: Push to AUR
