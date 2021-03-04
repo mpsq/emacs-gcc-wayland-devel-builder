@@ -15,6 +15,18 @@
 FROM archlinux:base-devel
 
 COPY deps .
+COPY .env .
+
+ENV CC="/usr/bin/clang" \
+  CXX="/usr/bin/clang++" \
+  CPP="/usr/bin/clang -E" \
+  LD="/usr/bin/lld" \
+  AR="/usr/bin/llvm-ar" \
+  AS="/usr/bin/llvm-as" \
+  CFLAGS="-g -flto -fuse-ld=lld" \
+  CXXFLAGS="-g -flto -fuse-ld=lld"
+
+RUN /bin/bash -c "source .env"
 
 RUN pacman -Syu --noconfirm && \
   pacman -U --noconfirm libgccjit-10.2.0-2-x86_64.pkg.tar.zst && \
@@ -42,27 +54,18 @@ RUN pacman -Syu --noconfirm && \
   jq \
   openssh && \
   groupadd -r pcr && useradd --no-log-init -r -g pcr pcr && \
-  mkdir /home/pcr && \
-  chown -R pcr:pcr /home/pcr && \
+  mkdir "$HOME" && \
+  chown -R pcr:pcr "$HOME" && \
   echo "pcr ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
   chmod 0440 /etc/sudoers.d/user
 
-WORKDIR /home/pcr
+WORKDIR $HOME
 
 COPY PKGBUILD .
 COPY pull.bash .
 
-RUN chown -R pcr:pcr /home/pcr
+RUN chown -R pcr:pcr "$HOME"
 USER pcr
-
-ENV CC="/usr/bin/clang" \
-  CXX="/usr/bin/clang++" \
-  CPP="/usr/bin/clang -E" \
-  LD="/usr/bin/lld" \
-  AR="/usr/bin/llvm-ar" \
-  AS="/usr/bin/llvm-as" \
-  CFLAGS="-g -flto -fuse-ld=lld" \
-  CXXFLAGS="-g -flto -fuse-ld=lld"
 
 RUN ["./pull.bash"]
 RUN makepkg && \

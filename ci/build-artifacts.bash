@@ -2,11 +2,11 @@
 
 set -euxo pipefail
 
-cd /home/pcr
+cd "$HOME"
 
 # Get sources
-cp /__w/emacs-gcc-wayland-devel-builder/emacs-gcc-wayland-devel-builder/pull.bash pull.bash
-cp /__w/emacs-gcc-wayland-devel-builder/emacs-gcc-wayland-devel-builder/PKGBUILD PKGBUILD
+cp "$GITHUB_WORKSPACE"/pull.bash pull.bash
+cp "$GITHUB_WORKSPACE"/PKGBUILD PKGBUILD
 ./pull.bash
 chown -R pcr:pcr emacs
 
@@ -23,7 +23,7 @@ tar czf "$PKG_VERSION".tar.gz -C out .
 # Get release body
 delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
 echo -en "# Commits since last release\n\n" > body.md
-echo -en "Check [upstream]("$UPSTREAM_REPO"/commits) for the full history.\n\n" >> body.md
+echo -en "Check [upstream]($UPSTREAM_REPO/commits) for the full history.\n\n" >> body.md
 
 # Get the list of commits since last release
 curl -s "$UPSTREAM_API"/commits?per_page="$delta" | \
