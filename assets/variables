@@ -1,7 +1,8 @@
 AUR_DNS=aur.archlinux.org
 AUR_IP=95.216.144.15
 AUR_PKG=emacs-gcc-wayland-devel-bin
-HOME=/home/pcr
+USR=pcr
+USR_HOME=/home/pcr
 PKG_REL=1
 UPSTREAM_API=https://api.github.com/repos/flatwhatson/emacs
 UPSTREAM_BRANCH=pgtk-nativecomp

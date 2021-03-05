@@ -5,7 +5,7 @@ set -euxo pipefail
 shopt -s expand_aliases
 
 # Checksum artifacts
-cd "$HOME"
+cd "$USR_HOME"
 sum=$(sha512sum "$PKG_VERSION".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
 
 # Setup SSH
@@ -21,9 +21,9 @@ ssh-keyscan "$AUR_IP" >> .ssh/known_hosts
 # Setup git
 alias mygit="git -c user.name=Méril\ Pilon -c user.email=me@mpsq.org"
 mygit clone ssh://"$AUR_DNS"/"$AUR_PKG".git
-mv "$AUR_PKG" "$HOME"
-chown -R pcr:pcr "$HOME"/"$AUR_PKG"
-cd "$HOME"/"$AUR_PKG"
+mv "$AUR_PKG" "$USR_HOME"
+chown -R "$USR":"$USR" "$USR_HOME"/"$AUR_PKG"
+cd "$USR_HOME"/"$AUR_PKG"
 
 # Amend package, set pkgver, sha512 sum and pkgrel + fix permissions
 sed -i -r -e 's~pkgver=.*~pkgver='"$PKG_VERSION"'~' PKGBUILD
@@ -32,8 +32,8 @@ sed -i -r -e 's~pkgrel=.*~pkgrel='"$PKG_REL"'~' PKGBUILD
 
 # Cleanup + fix permissions
 rm .SRCINFO
-su pcr -c "makepkg --printsrcinfo" > .SRCINFO
-chown -R pcr:pcr .SRCINFO
+su "$USR" -c "makepkg --printsrcinfo" > .SRCINFO
+chown -R "$USR":"$USR" .SRCINFO
 
 # Push changes
 mygit add .SRCINFO PKGBUILD
