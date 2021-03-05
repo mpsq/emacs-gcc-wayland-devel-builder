@@ -58,5 +58,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: emacs-manual-build
-          path: ${{ env.HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
+          path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           retention-days: 5
