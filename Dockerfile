@@ -14,8 +14,10 @@
 #
 FROM archlinux:base-devel
 
-COPY deps .
-COPY .env .
+ARG UPSTREAM_BRANCH
+ARG UPSTREAM_REPO
+ARG USR
+ARG USR_HOME
 
 ENV CC="/usr/bin/clang" \
   CXX="/usr/bin/clang++" \
@@ -26,10 +28,12 @@ ENV CC="/usr/bin/clang" \
   CFLAGS="-g -flto -fuse-ld=lld" \
   CXXFLAGS="-g -flto -fuse-ld=lld"
 
-RUN /bin/bash -c "source .env"
+COPY assets/ /assets/
+COPY scripts/ /scripts/
 
-RUN pacman -Syu --noconfirm && \
-  pacman -U --noconfirm libgccjit-10.2.0-2-x86_64.pkg.tar.zst && \
+RUN \
+  pacman -Syu --noconfirm && \
+  pacman -U --noconfirm /assets/libgccjit-10.2.0-2-x86_64.pkg.tar.zst && \
   pacman -S --noconfirm \
   # Emacs deps
   alsa-lib \
@@ -52,21 +56,24 @@ RUN pacman -Syu --noconfirm && \
   expac \
   git \
   jq \
-  openssh && \
-  groupadd -r pcr && useradd --no-log-init -r -g pcr pcr && \
-  mkdir "$HOME" && \
-  chown -R pcr:pcr "$HOME" && \
-  echo "pcr ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
+  openssh
+
+RUN \
+  groupadd -r "$USR" && useradd --no-log-init -r -g "$USR" "$USR" && \
+  mkdir "$USR_HOME" && \
+  chown -R "$USR":"$USR" "$USR_HOME" && \
+  echo "$USR ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
   chmod 0440 /etc/sudoers.d/user
 
-WORKDIR $HOME
+WORKDIR $USR_HOME
 
-COPY PKGBUILD .
-COPY pull.bash .
+USER $USR
 
-RUN chown -R pcr:pcr "$HOME"
-USER pcr
+SHELL ["/bin/bash", "-c"]
 
-RUN ["./pull.bash"]
-RUN makepkg && \
+RUN \
+  cp /scripts/pull.bash . && \
+  cp /assets/PKGBUILD . && \
+  ./pull.bash && \
+  makepkg && \
   rm emacs-1-1-x86_64.pkg.tar.zst

@@ -2,16 +2,16 @@
 
 set -euxo pipefail
 
-cd "$HOME"
+cd "$USR_HOME"
 
 # Get sources
-cp "$GITHUB_WORKSPACE"/pull.bash pull.bash
-cp "$GITHUB_WORKSPACE"/PKGBUILD PKGBUILD
+cp "$GITHUB_WORKSPACE"/scripts/pull.bash pull.bash
+cp "$GITHUB_WORKSPACE"/assets/PKGBUILD PKGBUILD
 ./pull.bash
-chown -R pcr:pcr emacs
+chown -R "$USR":"$USR" emacs
 
 # Create artifacts
-su pcr -c "makepkg"
+su "$USR" -c "makepkg"
 
 # Unpack artifacts
 mkdir out

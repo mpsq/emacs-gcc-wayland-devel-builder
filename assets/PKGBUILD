@@ -10,7 +10,7 @@ source=()
 sha1sums=()
 
 build() {
-  cd "$HOME"/emacs
+  cd "$USR_HOME"/emacs
 
   [[ -x configure ]] || ( ./autogen.sh git && ./autogen.sh autoconf )
 
@@ -42,7 +42,7 @@ build() {
 }
 
 package() {
-  cd "$HOME"/emacs
+  cd "$USR_HOME"/emacs
 
   make DESTDIR="$pkgdir" install
 

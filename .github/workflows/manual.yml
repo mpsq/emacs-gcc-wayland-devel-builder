@@ -20,16 +20,16 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v2
       - name: Check last version
-        run: bash ./ci/check-last-version.bash
+        run: bash ./scripts/check-last-version.bash
       - name: Import environment variables
         shell: bash
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
-          done < .env
+          done < assets/variables
       - name: Set env vars
         id: var
-        run: . ./ci/set-env-vars.bash
+        run: . ./scripts/set-env-vars.bash
     outputs:
       pkg_version: ${{ steps.var.outputs.pkg_version }}
 
@@ -49,11 +49,11 @@ jobs:
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
-          done < .env
+          done < assets/variables
       - name: Patch glibc
-        run: bash ./ci/patch-glibc.bash
+        run: bash ./scripts/patch-glibc.bash
       - name: Build artifacts
-        run: bash ./ci/build-artifacts.bash
+        run: bash ./scripts/build-artifacts.bash
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
