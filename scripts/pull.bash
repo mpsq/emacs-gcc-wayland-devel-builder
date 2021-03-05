@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euxo pipefail
+
 if [[ -d "emacs" ]]; then
   cd emacs
   git checkout .
