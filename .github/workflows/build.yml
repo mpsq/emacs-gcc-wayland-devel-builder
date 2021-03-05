@@ -62,7 +62,7 @@ jobs:
         with:
           tag_name: ${{ needs.check.outputs.pkg_version }}
           release_name: Release ${{ needs.check.outputs.pkg_version }}
-          body_path: ${{ env.HOME }}/body.md
+          body_path: ${{ env.USR_HOME }}/body.md
           draft: false
           prerelease: false
       - name: Upload release asset
@@ -72,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_content_type: application/gzip
       - name: Push to AUR
