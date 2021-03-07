@@ -1,16 +1,8 @@
 #
 # This Dockerfile is used to build the image "mpsq/emacs-builder".
-# Link: https://hub.docker.com/repository/docker/mpsq/emacs-builder
+# https://hub.docker.com/repository/docker/mpsq/emacs-builder
 #
-# What is the point of this?
-#   - Have an Archlinux environment
-#   - Pull and compile Emacs so it is much faster to produce subsequent binaries
-#
-# This image is obviously then used in the GitHub action to compile Emacs.
-#
-# At the moment, this image is built manually from times to times (= very
-# infrequently). In the future, I might get CI to do it, maybe on a monthly
-# basis.
+# This image is then used in GitHub actions to compile Emacs.
 #
 FROM archlinux:base-devel
 
@@ -71,6 +63,8 @@ USER $USR
 
 SHELL ["/bin/bash", "-c"]
 
+# We compile Emacs in order to cache artifacts in the image and get better
+# compilation time in subsequent builds.
 RUN \
   cp /scripts/pull.bash . && \
   cp /assets/PKGBUILD . && \
