@@ -1,4 +1,4 @@
-name: build-manual
+name: "Build Emacs (manual)"
 on:
   workflow_dispatch:
     inputs:
