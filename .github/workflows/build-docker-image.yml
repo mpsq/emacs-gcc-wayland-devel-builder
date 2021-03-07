@@ -1,0 +1,37 @@
+on:
+  schedule:
+    - cron: "30 11 * * 0"
+
+jobs:
+  image:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      - name: Import environment variables
+        shell: bash
+        run: |
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < assets/variables
+      - name: Set up Docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: mpsq/emacs-builder:latest
+          build-args: |
+            UPSTREAM_BRANCH=${{ env.UPSTREAM_BRANCH }}
+            UPSTREAM_REPO=${{ env.UPSTREAM_REPO }}
+            USR=${{ env.USR }}
+            USR_HOME=${{ env.USR_HOME }}
