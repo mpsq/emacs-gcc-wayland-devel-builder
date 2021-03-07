@@ -1,3 +1,4 @@
+name: "Build emacs-builder Docker image"
 on:
   schedule:
     - cron: "30 11 * * 0"

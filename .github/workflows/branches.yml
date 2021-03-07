@@ -1,4 +1,4 @@
-name: check-branches
+name: "Run checks on branches"
 on:
   - pull_request
 
