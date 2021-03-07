@@ -1,4 +1,4 @@
-name: build-release
+name: "Build and release Emacs (automated)"
 on:
   workflow_dispatch:
     inputs:
