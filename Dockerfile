@@ -1,6 +1,6 @@
 #
 # This Dockerfile is used to build the image "mpsq/emacs-builder".
-# https://hub.docker.com/repository/docker/mpsq/emacs-builder
+# https://hub.docker.com/r/mpsq/emacs-builder
 #
 # This image is then used in GitHub actions to compile Emacs.
 #
