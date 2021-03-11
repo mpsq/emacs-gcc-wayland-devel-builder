@@ -10,11 +10,21 @@ source=()
 sha1sums=()
 
 build() {
+  export CC="/usr/bin/clang"
+  export CXX="/usr/bin/clang++"
+  export CPP="/usr/bin/clang -E"
+  export LD="/usr/bin/lld"
+  export AR="/usr/bin/llvm-ar"
+  export AS="/usr/bin/llvm-as"
+  export CFLAGS+=" -g -flto"
+  export CCFLAGS+=" -fuse-ld=lld"
+  export CXXFLAGS+=" -g -flto -fuse-ld=lld"
+
   cd "$USR_HOME"/emacs
 
   [[ -x configure ]] || ( ./autogen.sh git && ./autogen.sh autoconf )
 
-  _conf=(
+  local _conf=(
     --prefix=/usr
     --sysconfdir=/etc
     --libexecdir=/usr/lib
