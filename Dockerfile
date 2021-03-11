@@ -62,5 +62,3 @@ RUN \
   su-exec "$USR" yay -Scc --noconfirm
 
 WORKDIR $USR_HOME
-
-USER $USR

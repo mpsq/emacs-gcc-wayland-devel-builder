@@ -36,9 +36,7 @@ jobs:
   artifact:
     runs-on: ubuntu-20.04
     needs: check
-    container:
-      image: mpsq/emacs-builder:latest
-      options: --user root
+    container: mpsq/emacs-builder:latest
     env:
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
     steps:
