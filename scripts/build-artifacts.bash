@@ -11,7 +11,9 @@ cp "$GITHUB_WORKSPACE"/assets/PKGBUILD PKGBUILD
 chown -R "$USR":"$USR" emacs
 
 # Create artifacts
-su "$USR" -c "makepkg"
+MAKEFLAGS="-j$(nproc)"
+export MAKEFLAGS
+su-exec "$USR" makepkg
 
 # Unpack artifacts
 mkdir out
