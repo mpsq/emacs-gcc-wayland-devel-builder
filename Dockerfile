@@ -15,6 +15,7 @@ ARG USR_HOME
 COPY assets/ /assets/
 COPY scripts/ /scripts/
 
+# This is a requirement for pushd/popd + ./scripts/pull.bash script
 SHELL ["/bin/bash", "-c"]
 
 RUN \
@@ -29,9 +30,9 @@ RUN \
   libxml2 lld llvm webkit2gtk xorgproto \
   # GitHub Actions deps
   bc expac git jq openssh \
-  # yay deps
+  # yay dep
   go && \
-  # Add $USR user / group with sudo access (for yay)
+  # Add $USR user / group with sudo access (required by yay)
   groupadd -r "$USR" && \
   useradd --no-log-init -r -g "$USR" "$USR" && \
   mkdir "$USR_HOME" && \
@@ -44,11 +45,13 @@ RUN \
   pushd yay && \
   su "$USR" -c "makepkg -si --noconfirm" && \
   popd && \
-  # Install su-exec
+  # Install 'su-exec'. This utility replaces 'su USR -c ""'. The main advantage
+  # is that it does not spawn a child and therefore shares environment variables
+  # with the current shell
   su "$USR" -c "yay -S su-exec --noconfirm" && \
   # Install libgccjit
   su-exec "$USR" yay -S libgccjit --noconfirm && \
-  # Copy needed files to $USR_HOME
+  # Copy needed files to $USR_HOME/
   su-exec "$USR" cp /scripts/pull.bash . && \
   su-exec "$USR" cp /assets/PKGBUILD . && \
   # Pull Emacs from git repository
