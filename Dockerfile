@@ -41,7 +41,7 @@ RUN \
   chmod 0440 /etc/sudoers.d/user && \
   # Install yay
   pushd "$USR_HOME" && \
-  su "$USR" -c "git clone https://aur.archlinux.org/yay.git" && \
+  su "$USR" -c "git clone --depth=1 https://aur.archlinux.org/yay.git" && \
   pushd yay && \
   su "$USR" -c "makepkg -si --noconfirm" && \
   popd && \
