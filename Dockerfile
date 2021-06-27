@@ -16,7 +16,7 @@ COPY assets/ /assets/
 COPY scripts/ /scripts/
 
 # This is a requirement for pushd/popd + ./scripts/pull.bash script
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-l", "-euxo", "pipefail", "-c"]
 
 RUN \
   # Compilation flags for faster builds
