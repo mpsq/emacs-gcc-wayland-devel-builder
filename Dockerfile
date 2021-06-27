@@ -35,7 +35,10 @@ RUN \
   # Add $USR user / group with sudo access (required by yay)
   groupadd -r "$USR" && \
   useradd --no-log-init -r -g "$USR" "$USR" && \
-  mkdir "$USR_HOME" && \
+  mkdir -p "$USR_HOME"/.gnupg && \
+  cp /assets/gpg.conf "$USR_HOME"/.gnupg/gpg.conf && \
+  chmod 700 "$USR_HOME"/.gnupg && \
+  chmod 600 "$USR_HOME"/.gnupg/* && \
   chown -R "$USR":"$USR" "$USR_HOME" && \
   echo "$USR ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
   chmod 0440 /etc/sudoers.d/user && \
