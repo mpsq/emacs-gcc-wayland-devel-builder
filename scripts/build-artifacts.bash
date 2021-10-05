@@ -15,7 +15,7 @@ MAKEFLAGS="-j$(nproc)"
 export MAKEFLAGS
 
 pushd emacs || exit
-su-exec "$USR" make distclean
+su-exec "$USR" make extraclean
 popd || exit
 su-exec "$USR" makepkg
 

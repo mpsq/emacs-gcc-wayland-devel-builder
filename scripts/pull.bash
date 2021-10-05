@@ -4,6 +4,7 @@ set -euxo pipefail
 
 if [[ -d "emacs" ]]; then
   cd emacs
+  git clean -fX
   git checkout .
   git pull --rebase origin "$UPSTREAM_BRANCH"
 else
