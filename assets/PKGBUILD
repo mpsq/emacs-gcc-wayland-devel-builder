@@ -22,7 +22,6 @@ build() {
 
   cd "$USR_HOME"/emacs
 
-  make distclean
   [[ -x configure ]] || (./autogen.sh git && ./autogen.sh autoconf)
 
   local _conf=(

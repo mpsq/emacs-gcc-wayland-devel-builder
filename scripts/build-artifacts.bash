@@ -13,6 +13,10 @@ chown -R "$USR":"$USR" emacs
 # Create artifacts
 MAKEFLAGS="-j$(nproc)"
 export MAKEFLAGS
+
+pushd emacs || exit
+su-exec "$USR" make distclean
+popd || exit
 su-exec "$USR" makepkg
 
 # Unpack artifacts
