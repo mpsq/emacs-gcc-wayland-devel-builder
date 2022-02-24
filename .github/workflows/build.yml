@@ -48,8 +48,6 @@ jobs:
           while read line; do
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
-      - name: Patch glibc
-        run: bash ./scripts/patch-glibc.bash
       - name: Build artifacts
         run: bash ./scripts/build-artifacts.bash
       - name: Create release
