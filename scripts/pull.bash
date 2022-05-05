@@ -2,6 +2,8 @@
 
 set -euxo pipefail
 
+git config --global --add safe.directory "$USR_HOME"/emacs
+
 if [[ -d "emacs" ]]; then
   cd emacs
   git clean -fX
