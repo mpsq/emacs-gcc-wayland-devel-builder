@@ -4,8 +4,8 @@ set -euxo pipefail
 
 # We set PKG_VERSION to "xx.xx.xx"
 PKG_VERSION=$(
-  curl -s "$UPSTREAM_SRC"/configure.ac | \
-    grep AC_INIT | \
+  curl -s "$UPSTREAM_SRC"/configure.ac |
+    grep AC_INIT |
     sed -e 's/^.\+\ \([0-9]\+\.[0-9]\+\.[0-9]\+\?\).\+$/\1/'
 )
 PKG_VERSION+="."
