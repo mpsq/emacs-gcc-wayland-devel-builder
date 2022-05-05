@@ -36,6 +36,7 @@ su "$USR" -c "makepkg --printsrcinfo" > .SRCINFO
 chown -R "$USR":"$USR" .SRCINFO
 
 # Push changes
+mygit config --global --add safe.directory "$USR_HOME"/"$AUR_PKG"
 mygit add .SRCINFO PKGBUILD
 mygit commit -m "Bump to $PKG_VERSION"
 mygit push origin master
