@@ -5,6 +5,6 @@ USR=pcr
 USR_HOME=/home/pcr
 PKG_REL=1
 UPSTREAM_API=https://api.github.com/repos/flatwhatson/emacs
-UPSTREAM_BRANCH=pgtk-nativecomp
+UPSTREAM_BRANCH=pgtk-nativecomp-dev
 UPSTREAM_REPO=https://github.com/flatwhatson/emacs
 UPSTREAM_SRC=https://raw.githubusercontent.com/flatwhatson/emacs/pgtk-nativecomp
