@@ -16,22 +16,25 @@ env:
 jobs:
   check:
     runs-on: ubuntu-20.04
+    outputs:
+      pkg_version: ${{ steps.var.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
+
       - name: Check last version
         run: bash ./scripts/check-last-version.bash
+
       - name: Import environment variables
         shell: bash
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
+
       - name: Set env vars
         id: var
         run: . ./scripts/set-env-vars.bash
-    outputs:
-      pkg_version: ${{ steps.var.outputs.pkg_version }}
 
   artifact:
     runs-on: ubuntu-20.04
@@ -42,14 +45,17 @@ jobs:
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
+
       - name: Import environment variables
         shell: bash
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
+
       - name: Build artifacts
         run: bash ./scripts/build-artifacts.bash
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -61,8 +67,10 @@ jobs:
           body_path: ${{ env.USR_HOME }}/body.md
           draft: false
           prerelease: false
+
       - name: Upload release asset
         id: upload-release-asset
+        continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,6 +79,31 @@ jobs:
           asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
           asset_content_type: application/gzip
+
+      - name: Upload release asset
+        id: upload-release-asset-2
+        if: steps.upload-release-asset.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload release asset
+        if: steps.upload-release-asset-2.outcome == 'failure'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
+          asset_content_type: application/gzip
+
       - name: Push to AUR
         env:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
