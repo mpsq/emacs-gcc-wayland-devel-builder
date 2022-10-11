@@ -33,17 +33,18 @@ build() {
     --with-gameuser=:games
     --with-sound=alsa
     --with-modules
-    --with-x-toolkit=gtk3
-    --with-cairo
+    --with-xinput2
     --with-xwidgets
     --with-native-compilation
     --with-pgtk
     --without-compress-install
     --without-gconf
-    --without-gsettings
+    --without-libotf
     --without-m17n-flt
+    --without-xaw3d
     --enable-autodepend
     --enable-link-time-optimization
+    --program-transform-name=s/\([ec]tags\)/\1.emacs/
   )
 
   ./configure "${_conf[@]}"
