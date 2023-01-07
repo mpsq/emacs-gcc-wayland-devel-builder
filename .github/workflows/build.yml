@@ -38,6 +38,8 @@ jobs:
         run: bash ./scripts/check-existing-release.bash
         env:
           PKG_REL: ${{ steps.var.outputs.pkg_rel }}
+          PKG_VERSION: ${{ steps.var.outputs.pkg_version }}
+          TKN: ${{ secrets.GITHUB_TOKEN }}
 
   artifact:
     runs-on: ubuntu-latest
