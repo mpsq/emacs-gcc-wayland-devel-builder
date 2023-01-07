@@ -10,6 +10,7 @@ sum=$(sha512sum "$PKG_VERSION".tar.gz | sed -r 's/(.*)\s\s.*/\1/')
 
 # Setup SSH
 cd /root
+rm -rf .ssh
 mkdir .ssh
 echo "$PUB_KEY" | tr -d '\r' >.ssh/id_aur.pub
 echo "$PRIV_KEY" | base64 --decode >.ssh/id_aur

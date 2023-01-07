@@ -20,6 +20,7 @@ popd || exit
 su-exec "$USR" makepkg
 
 # Unpack artifacts
+rm -rf out
 mkdir out
 tar xf emacs-1-1-x86_64.pkg.tar.zst -C out
 rm emacs-1-1-x86_64.pkg.tar.zst
