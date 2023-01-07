@@ -18,12 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.var.outputs.pkg_version }}
+      pkg_rel: ${{ steps.var.outputs.pkg_rel }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
-
-      - name: Check last version
-        run: bash ./scripts/check-last-version.bash
 
       - name: Import environment variables
         shell: bash
@@ -36,12 +34,16 @@ jobs:
         id: var
         run: . ./scripts/set-env-vars.bash
 
+      - name: Check last version
+        run: bash ./scripts/check-last-version.bash
+
   artifact:
     runs-on: ubuntu-latest
     needs: check
     container: mpsq/emacs-builder:latest
     env:
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
+      PKG_REL: ${{ needs.check.outputs.pkg_rel }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
@@ -58,9 +60,9 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          tag: ${{ needs.check.outputs.pkg_version }}
+          tag: ${{ needs.check.outputs.pkg_version }}-${{ needs.check.outputs.pkg_rel }}
           bodyFile: ${{ env.USR_HOME }}/body.md
-          name: Release ${{ needs.check.outputs.pkg_version }}
+          name: Release ${{ needs.check.outputs.pkg_version }}-${{ needs.check.outputs.pkg_rel }}
           artifactContentType: application/gzip
           artifacts: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -3,7 +3,6 @@ AUR_IP=95.216.144.15
 AUR_PKG=emacs-gcc-wayland-devel-bin
 USR=pcr
 USR_HOME=/home/pcr
-PKG_REL=1
 UPSTREAM_API=https://api.github.com/repos/flatwhatson/emacs
 UPSTREAM_BRANCH=pgtk-nativecomp-dev
 UPSTREAM_REPO=https://github.com/flatwhatson/emacs

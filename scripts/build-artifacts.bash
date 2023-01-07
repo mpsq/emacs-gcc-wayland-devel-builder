@@ -27,6 +27,11 @@ rm emacs-1-1-x86_64.pkg.tar.zst
 rm out/.BUILDINFO out/.MTREE out/.PKGINFO
 tar czf "$PKG_VERSION".tar.gz -C out .
 
+if [[ "$NEW_COMMIT_N" == "$OLD_COMMIT_N" ]]; then
+  touch body.md
+  exit 0
+fi
+
 # Get release body
 delta=$(echo "$NEW_COMMIT_N - $OLD_COMMIT_N" | bc)
 echo -en "# Commits since last release\n\n" >body.md

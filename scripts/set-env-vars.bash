@@ -15,3 +15,10 @@ PKG_VERSION+="$NEW_COMMIT_N"
 # Export to env var + github action var
 export PKG_VERSION="${PKG_VERSION}"
 echo "pkg_version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+pkgrel="1"
+if [[ -v I_PKG_REL ]]; then
+  pkgrel="$I_PKG_REL"
+fi
+export PKG_REL="${pkgrel}"
+echo "pkg_rel=$pkgrel" >> $GITHUB_OUTPUT
