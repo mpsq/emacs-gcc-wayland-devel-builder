@@ -28,7 +28,7 @@ jobs:
       pkg_version: ${{ steps.var.outputs.pkg_version }}
       pkg_rel: ${{ steps.var.outputs.pkg_rel }}
     steps:
-      - name: Checkout the repo
+      - name: Checkout the repository
         uses: actions/checkout@v3
 
       - name: Import environment variables
@@ -38,7 +38,7 @@ jobs:
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
 
-      - name: Set env vars
+      - name: Set job variables
         id: var
         run: . ./scripts/set-job-vars.bash
 
@@ -58,7 +58,7 @@ jobs:
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
       PKG_REL: ${{ needs.check.outputs.pkg_rel }}
     steps:
-      - name: Checkout the repo
+      - name: Checkout the repository
         uses: actions/checkout@v3
 
       - name: Import environment variables
@@ -78,7 +78,8 @@ jobs:
           path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           retention-days: 5
 
-      - uses: ncipollo/release-action@v1
+      - name: Create release & upload artifacts
+        uses: ncipollo/release-action@v1
         if: ${{ inputs.release }}
         with:
           tag: ${{ needs.check.outputs.pkg_version }}-${{ needs.check.outputs.pkg_rel }}

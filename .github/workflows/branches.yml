@@ -7,7 +7,7 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repo
+      - name: Checkout the repository
         uses: actions/checkout@v3
 
       - name: Lint Bash scripts
