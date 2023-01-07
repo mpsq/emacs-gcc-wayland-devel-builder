@@ -14,4 +14,4 @@ PKG_VERSION+="$NEW_COMMIT_N"
 
 # Export to env var + github action var
 export PKG_VERSION="${PKG_VERSION}"
-echo "::set-output name=pkg_version::${PKG_VERSION}"
+echo "pkg_version=$PKG_VERSION" >> $GITHUB_OUTPUT

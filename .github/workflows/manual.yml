@@ -15,45 +15,52 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    outputs:
+      pkg_version: ${{ steps.var.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Check last version
         run: bash ./scripts/check-last-version.bash
+
       - name: Import environment variables
         shell: bash
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
+
       - name: Set env vars
         id: var
         run: . ./scripts/set-env-vars.bash
-    outputs:
-      pkg_version: ${{ steps.var.outputs.pkg_version }}
 
   artifact:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: check
     container: mpsq/emacs-builder:latest
     env:
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Import environment variables
         shell: bash
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
           done < assets/variables
+
       - name: Patch glibc
         run: bash ./scripts/patch-glibc.bash
+
       - name: Build artifacts
         run: bash ./scripts/build-artifacts.bash
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: emacs-manual-build
           path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz

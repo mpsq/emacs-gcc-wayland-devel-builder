@@ -15,12 +15,12 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.var.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check last version
         run: bash ./scripts/check-last-version.bash
@@ -37,14 +37,14 @@ jobs:
         run: . ./scripts/set-env-vars.bash
 
   artifact:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: check
     container: mpsq/emacs-builder:latest
     env:
       PKG_VERSION: ${{ needs.check.outputs.pkg_version }}
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Import environment variables
         shell: bash
@@ -56,6 +56,8 @@ jobs:
       - name: Build artifacts
         run: bash ./scripts/build-artifacts.bash
 
+      # This action is deprecated
+      # TODO: Find a replacement
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -68,6 +70,8 @@ jobs:
           draft: false
           prerelease: false
 
+      # This action is deprecated
+      # TODO: Find a replacement
       - name: Upload release asset
         id: upload-release-asset
         continue-on-error: true
