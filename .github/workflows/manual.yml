@@ -87,9 +87,9 @@ jobs:
           artifacts: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push to AUR
-        if: ${{ inputs.release }}
-        env:
-          PRIV_KEY: ${{ secrets.PRIV_KEY }}
-          PUB_KEY: ${{ secrets.PUB_KEY }}
-        run: bash ./scripts/push-to-aur.bash
+      # - name: Push to AUR
+      #   if: ${{ inputs.release }}
+      #   env:
+      #     PRIV_KEY: ${{ secrets.PRIV_KEY }}
+      #     PUB_KEY: ${{ secrets.PUB_KEY }}
+      #   run: bash ./scripts/push-to-aur.bash
