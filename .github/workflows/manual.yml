@@ -40,11 +40,13 @@ jobs:
 
       - name: Set env vars
         id: var
-        run: . ./scripts/set-env-vars.bash
+        run: . ./scripts/set-job-vars.bash
 
-      - name: Check last version
+      - name: Check for an existing release
         if: ${{ inputs.release }}
-        run: bash ./scripts/check-last-version.bash
+        run: bash ./scripts/check-existing-release.bash
+        env:
+          PKG_REL: ${{ steps.var.outputs.pkg_rel }}
 
   artifact:
     runs-on: ubuntu-latest
