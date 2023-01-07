@@ -56,57 +56,14 @@ jobs:
       - name: Build artifacts
         run: bash ./scripts/build-artifacts.bash
 
-      # This action is deprecated
-      # TODO: Find a replacement
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ needs.check.outputs.pkg_version }}
-          release_name: Release ${{ needs.check.outputs.pkg_version }}
-          body_path: ${{ env.USR_HOME }}/body.md
-          draft: false
-          prerelease: false
-
-      # This action is deprecated
-      # TODO: Find a replacement
-      - name: Upload release asset
-        id: upload-release-asset
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload release asset
-        id: upload-release-asset-2
-        if: steps.upload-release-asset.outcome == 'failure'
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload release asset
-        if: steps.upload-release-asset-2.outcome == 'failure'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_name: ${{ needs.check.outputs.pkg_version }}.tar.gz
-          asset_content_type: application/gzip
+          tag: ${{ needs.check.outputs.pkg_version }}
+          bodyFile: ${{ env.USR_HOME }}/body.md
+          name: Release ${{ needs.check.outputs.pkg_version }}
+          artifactContentType: application/gzip
+          artifacts: ${{ env.USR_HOME }}/${{ needs.check.outputs.pkg_version }}.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push to AUR
         env:
