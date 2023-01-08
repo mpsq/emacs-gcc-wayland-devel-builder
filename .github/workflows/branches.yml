@@ -1,10 +1,10 @@
-name: "Run checks on branches"
+name: Run checks on branches
 on:
   - pull_request
 
 jobs:
-  shellcheck:
-    name: Shellcheck
+  lint:
+    name: Run linting tasks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
