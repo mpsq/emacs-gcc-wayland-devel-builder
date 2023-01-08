@@ -13,10 +13,12 @@ PKG_VERSION+="."
 PKG_VERSION+="$NEW_COMMIT_N"
 
 # Export to env var + github action var
+# shellcheck disable=SC2086
 echo "pkg_version=$PKG_VERSION" >>$GITHUB_OUTPUT
 
 pkgrel="1"
 if [[ -v I_PKG_REL ]]; then
   pkgrel="$I_PKG_REL"
 fi
+# shellcheck disable=SC2086
 echo "pkg_rel=$pkgrel" >>$GITHUB_OUTPUT
