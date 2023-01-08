@@ -18,6 +18,6 @@ jobs:
           scandir: "./scripts"
 
       - name: Lint Dockerfile
-        uses: brpaz/hadolint-action@v2
+        uses: hadolint/hadolint-action@v3
         with:
           dockerfile: Dockerfile
