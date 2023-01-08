@@ -1,0 +1,25 @@
+name: Check for new commits
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  check:
+    name: Check if upstream branch has new commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Import environment variables
+        shell: bash
+        run: |
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < assets/variables
+
+      - name: Check for new commmits
+        run: bash ./scripts/check-new-commits.bash
+        env:
+          TKN: ${{ secrets.GITHUB_TOKEN }}
