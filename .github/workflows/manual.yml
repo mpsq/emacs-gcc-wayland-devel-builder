@@ -1,4 +1,4 @@
-name: Build Emacs (manual)
+name: Build and release Emacs (manual)
 on:
   workflow_dispatch:
     inputs:
